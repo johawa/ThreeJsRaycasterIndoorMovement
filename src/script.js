@@ -2,98 +2,48 @@ import "./style.css";
 import * as THREE from "three";
 import CameraControls from "camera-controls";
 
+import createSphere from "./Objects/createSphere";
+import createFloor from "./Objects/createFloor";
+import createRollOverCircle from "./Objects//createRollOverCircle";
+
+import createCamera from "./Scene/createCamera";
+import createRenderer from "./Scene/createRenderer";
+import createAmbientLight from "./Scene/createAmbientLight";
+import createDirectionalLight from "./Scene/createDirectionalLight";
+
 CameraControls.install({ THREE: THREE });
 
 let currentIntersect = null;
 let currentFloorIntersect = null;
-const width = window.innerWidth;
-const height = window.innerHeight;
-const canvas = document.querySelector("canvas.webgl");
-const raycaster = new THREE.Raycaster();
-const clock = new THREE.Clock();
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, width / height, 0.01, 100);
 
-camera.position.set(4, 2, 5);
-const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
-});
-renderer.setSize(width, height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-document.body.appendChild(renderer.domElement);
-
-const cameraControls = new CameraControls(camera, renderer.domElement);
-
-cameraControls.minZoom = 1;
-cameraControls.maxZoom = 1;
-cameraControls.minDistance = 10;
-cameraControls.maxDistance = 10;
-
-/**
- * Objects
- */
-const object1 = new THREE.Mesh(
-  new THREE.SphereGeometry(0.5, 16, 16),
-  new THREE.MeshBasicMaterial({ color: "#ff0000" })
-);
-object1.position.x = -2;
-object1.position.y = 1;
-
-const object2 = new THREE.Mesh(
-  new THREE.SphereGeometry(0.5, 16, 16),
-  new THREE.MeshBasicMaterial({ color: "#ff0000" })
-);
-object2.position.y = 1;
-
-const object3 = new THREE.Mesh(
-  new THREE.SphereGeometry(0.5, 16, 16),
-  new THREE.MeshBasicMaterial({ color: "#ff0000" })
-);
-object3.position.x = 2;
-object3.position.y = 1;
-
-scene.add(object1, object2, object3);
-/**
- * Floor
- */
-
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStandardMaterial({ color: "#a9c388" }));
-floor.rotation.x = -Math.PI * 0.5;
-floor.position.y = 0;
-scene.add(floor);
-
-const rollOverGeo = new THREE.CircleGeometry(1, 32);
-const rollOverMaterial = new THREE.MeshBasicMaterial({ color: "white", opacity: 0.5, transparent: true });
-const rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
-rollOverMesh.rotation.x = -Math.PI * 0.5;
-
-scene.add(rollOverMesh);
-console.log(rollOverMesh);
-
-/**
- * Sizes
- */
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
 
-/**
- * Lights
- */
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+const raycaster = new THREE.Raycaster();
+const clock = new THREE.Clock();
+const scene = new THREE.Scene();
+const camera = createCamera({ width: sizes.width, height: sizes.height });
+const renderer = createRenderer({ width: sizes.width, height: sizes.height });
+const cameraControls = new CameraControls(camera, renderer.domElement);
+
+const floor = createFloor();
+scene.add(floor);
+
+const object1 = createSphere({ color: "#ff0000", x: -2, y: 1, z: 0 });
+const object2 = createSphere({ color: "#ff0000", x: 0, y: 1, z: 0 });
+const object3 = createSphere({ color: "#ff0000", x: 2, y: 1, z: 0 });
+scene.add(object1, object2, object3);
+
+const rollOverCircle = createRollOverCircle();
+scene.add(rollOverCircle);
+
+
+const ambientLight = createAmbientLight();
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
-directionalLight.castShadow = true;
-directionalLight.shadow.mapSize.set(1024, 1024);
-directionalLight.shadow.camera.far = 15;
-directionalLight.shadow.camera.left = -7;
-directionalLight.shadow.camera.top = 7;
-directionalLight.shadow.camera.right = 7;
-directionalLight.shadow.camera.bottom = -7;
-directionalLight.position.set(5, 5, 5);
+const directionalLight = createDirectionalLight();
 scene.add(directionalLight);
 
 window.addEventListener("resize", () => {
@@ -149,7 +99,7 @@ window.addEventListener("click", (event) => {
   const objectsToTest = [object1, object2, object3];
   const intersects = raycaster.intersectObjects(objectsToTest);
 
-  const intersectGround = raycaster.intersectObject(floor);
+  /*   const intersectGround = raycaster.intersectObject(floor);
 
   if (intersectGround.length) {
     const intersect = intersectGround[0];
@@ -160,7 +110,7 @@ window.addEventListener("click", (event) => {
   } else {
     currentFloorIntersect = null;
   }
-
+ */
   for (const object of objectsToTest) {
     object.material.color.set("#ff0000");
   }
