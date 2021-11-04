@@ -14,11 +14,12 @@ import animate from "./Scene/animate";
 
 import { handleClickOnSphere, handleClickOnFloor } from "./Events/handleClickHandlers";
 import { handleResize, handelMouseMove } from "./Events/eventHandlers";
+import createMaterialSphere from "./Objects/createMaterialShpere";
 
 CameraControls.install({ THREE: THREE });
 
 // Variables
-let currentIntersect = null;
+let currentSphereIntersect = null;
 let currentFloorIntersect = null;
 const sizes = {
   width: window.innerWidth,
@@ -32,11 +33,32 @@ const scene = new THREE.Scene();
 const raycaster = new THREE.Raycaster();
 const renderer = createRenderer({ width: sizes.width, height: sizes.height });
 const camera = createCamera({ width: sizes.width, height: sizes.height });
+scene.add(camera);
 const cameraControls = new CameraControls(camera, renderer.domElement);
 
 // Lights
 scene.add(createAmbientLight());
 scene.add(createDirectionalLight());
+
+
+
+const sphere1 = createMaterialSphere();
+const sphere2 = createMaterialSphere();
+const sphere3 = createMaterialSphere();
+
+camera.add(sphere1);
+camera.add(sphere2);
+camera.add(sphere3);
+
+sphere1.position.set(0, -0.3, -1);
+sphere1.scale.set(0.2, 0.2, 0.2);
+
+sphere2.position.set(-0.3, -0.3, -1);
+sphere2.scale.set(0.2, 0.2, 0.2);
+
+sphere3.position.set(0.3, -0.3, -1);
+sphere3.scale.set(0.2, 0.2, 0.2);
+console.log(sphere1, camera);
 
 // Objects
 const { object1, object2, object3, floor, rollOverCircle } = addObjects(scene);
@@ -52,7 +74,7 @@ window.addEventListener("mousemove", (_event) => {
 
 window.addEventListener("click", (event) => {
   event.stopPropagation();
-  if (currentIntersect) handleClickOnSphere(currentIntersect, cameraControls);
+  if (currentSphereIntersect) handleClickOnSphere(currentSphereIntersect, cameraControls);
   else if (currentFloorIntersect) handleClickOnFloor(currentFloorIntersect, cameraControls);
 });
 
@@ -89,16 +111,16 @@ animate(() => {
   }
 
   if (intersects.length) {
-    if (currentIntersect === null) {
+    if (currentSphereIntersect === null) {
       /* console.log("mouse enter", intersects[0].object); */
     }
 
-    currentIntersect = intersects[0];
+    currentSphereIntersect = intersects[0];
   } else {
-    if (currentIntersect) {
-      /*  console.log("mouse leave", currentIntersect.object); */
+    if (currentSphereIntersect) {
+      /*  console.log("mouse leave", currentSphereIntersect.object); */
     }
-    currentIntersect = null;
+    currentSphereIntersect = null;
   }
 
   renderer.render(scene, camera);
