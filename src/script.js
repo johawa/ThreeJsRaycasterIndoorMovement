@@ -40,11 +40,9 @@ const cameraControls = new CameraControls(camera, renderer.domElement);
 scene.add(createAmbientLight());
 scene.add(createDirectionalLight());
 
-
-
-const sphere1 = createMaterialSphere();
-const sphere2 = createMaterialSphere();
-const sphere3 = createMaterialSphere();
+const sphere1 = createMaterialSphere({ color: 0xff0000 });
+const sphere2 = createMaterialSphere({ color: 0x00ff00 });
+const sphere3 = createMaterialSphere({ color: 0x0000ff });
 
 camera.add(sphere1);
 camera.add(sphere2);
@@ -79,11 +77,22 @@ window.addEventListener("click", (event) => {
 });
 
 animate(() => {
-  // const elapsed = clock.getElapsedTime();
+  const elapsed = clock.getElapsedTime();
   const delta = clock.getDelta();
 
   cameraControls.update(delta);
   raycaster.setFromCamera(mouse, camera);
+
+  // Material Spheres
+  const materialSpheresToTest = [sphere1, sphere2, sphere3];
+  const intersectedMaterialShpere = raycaster.intersectObjects([sphere1, sphere2, sphere3]);
+
+  for (const object of materialSpheresToTest) {
+  }
+
+  for (const intersect of intersectedMaterialShpere) {
+    intersect.object.rotation.y = Math.PI * elapsed * 0.4;
+  }
 
   // Floor
   const intersectedFloor = raycaster.intersectObject(floor);
@@ -99,10 +108,10 @@ animate(() => {
   }
 
   // Sphere
-  const objectsToTest = [object1, object2, object3];
-  const intersects = raycaster.intersectObjects(objectsToTest);
+  const spheresToTest = [object1, object2, object3];
+  const intersects = raycaster.intersectObjects(spheresToTest);
 
-  for (const object of objectsToTest) {
+  for (const object of spheresToTest) {
     object.material.color.set("#ff0000");
   }
 
