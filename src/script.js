@@ -5,6 +5,7 @@ import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
 
 let currentIntersect = null;
+let currentFloorIntersect = null;
 const width = window.innerWidth;
 const height = window.innerHeight;
 const canvas = document.querySelector("canvas.webgl");
@@ -56,6 +57,14 @@ const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStan
 floor.rotation.x = -Math.PI * 0.5;
 floor.position.y = 0;
 scene.add(floor);
+
+const rollOverGeo = new THREE.CircleGeometry(1, 32);
+const rollOverMaterial = new THREE.MeshBasicMaterial({ color: "white", opacity: 0.5, transparent: true });
+const rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
+rollOverMesh.rotation.x = -Math.PI * 0.5;
+
+scene.add(rollOverMesh);
+console.log(rollOverMesh);
 
 /**
  * Sizes
@@ -118,6 +127,15 @@ window.addEventListener("click", (event) => {
       currentIntersect.object.position.z,
       true
     );
+  } else if (currentFloorIntersect) {
+    console.log("click on Floor", currentFloorIntersect);
+
+    cameraControls.moveTo(
+      currentFloorIntersect.point.x,
+      currentFloorIntersect.point.y,
+      currentFloorIntersect.point.z,
+      true
+    );
   }
 });
 
@@ -130,6 +148,18 @@ window.addEventListener("click", (event) => {
 
   const objectsToTest = [object1, object2, object3];
   const intersects = raycaster.intersectObjects(objectsToTest);
+
+  const intersectGround = raycaster.intersectObject(floor);
+
+  if (intersectGround.length) {
+    const intersect = intersectGround[0];
+    currentFloorIntersect = intersect;
+
+    const point = new THREE.Vector3(intersect.point.x, intersect.point.y + 0.1, intersect.point.z);
+    rollOverMesh.position.copy(point).add(intersect.face.normal);
+  } else {
+    currentFloorIntersect = null;
+  }
 
   for (const object of objectsToTest) {
     object.material.color.set("#ff0000");
