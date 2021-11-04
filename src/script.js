@@ -56,7 +56,6 @@ sphere2.scale.set(0.2, 0.2, 0.2);
 
 sphere3.position.set(0.3, -0.3, -1);
 sphere3.scale.set(0.2, 0.2, 0.2);
-console.log(sphere1, camera);
 
 // Objects
 const { object1, object2, object3, floor, rollOverCircle } = addObjects(scene);
@@ -76,23 +75,14 @@ window.addEventListener("click", (event) => {
   else if (currentFloorIntersect) handleClickOnFloor(currentFloorIntersect, cameraControls);
 });
 
+console.log(object1);
+
 animate(() => {
   const elapsed = clock.getElapsedTime();
   const delta = clock.getDelta();
 
   cameraControls.update(delta);
   raycaster.setFromCamera(mouse, camera);
-
-  // Material Spheres
-  const materialSpheresToTest = [sphere1, sphere2, sphere3];
-  const intersectedMaterialShpere = raycaster.intersectObjects([sphere1, sphere2, sphere3]);
-
-  for (const object of materialSpheresToTest) {
-  }
-
-  for (const intersect of intersectedMaterialShpere) {
-    intersect.object.rotation.y = Math.PI * elapsed * 0.4;
-  }
 
   // Floor
   const intersectedFloor = raycaster.intersectObject(floor);
@@ -130,6 +120,20 @@ animate(() => {
       /*  console.log("mouse leave", currentSphereIntersect.object); */
     }
     currentSphereIntersect = null;
+  }
+
+  // Material Spheres
+  const materialSpheresToTest = [sphere1, sphere2, sphere3];
+  const intersectedMaterialShpere = raycaster.intersectObjects([sphere1, sphere2, sphere3]);
+
+  for (const object of materialSpheresToTest) {
+  }
+
+  for (const intersect of intersectedMaterialShpere) {
+    intersect.object.rotation.y = Math.PI * elapsed * 0.4;
+    object1.material.color.set("#ffffff");
+    object2.material.color.set("#ffffff");
+    object3.material.color.set("#ffffff");
   }
 
   renderer.render(scene, camera);
