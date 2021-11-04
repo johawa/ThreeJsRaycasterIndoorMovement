@@ -10,107 +10,76 @@ import createCamera from "./Scene/createCamera";
 import createRenderer from "./Scene/createRenderer";
 import createAmbientLight from "./Scene/createAmbientLight";
 import createDirectionalLight from "./Scene/createDirectionalLight";
+import animate from "./Scene/animate";
+
+import { handleClickOnSphere, handleClickOnFloor } from "./Events/handleClickHandlers";
+import { handleResize, handelMouseMove } from "./Events/eventHandlers";
 
 CameraControls.install({ THREE: THREE });
 
+// Variables
 let currentIntersect = null;
 let currentFloorIntersect = null;
-
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
 
-const raycaster = new THREE.Raycaster();
+// Init
+const mouse = new THREE.Vector2();
 const clock = new THREE.Clock();
 const scene = new THREE.Scene();
-const camera = createCamera({ width: sizes.width, height: sizes.height });
+const raycaster = new THREE.Raycaster();
 const renderer = createRenderer({ width: sizes.width, height: sizes.height });
+const camera = createCamera({ width: sizes.width, height: sizes.height });
 const cameraControls = new CameraControls(camera, renderer.domElement);
 
-const floor = createFloor();
-scene.add(floor);
+// Lights
+scene.add(createAmbientLight());
+scene.add(createDirectionalLight());
 
-const object1 = createSphere({ color: "#ff0000", x: -2, y: 1, z: 0 });
-const object2 = createSphere({ color: "#ff0000", x: 0, y: 1, z: 0 });
-const object3 = createSphere({ color: "#ff0000", x: 2, y: 1, z: 0 });
-scene.add(object1, object2, object3);
+// Objects
+const { object1, object2, object3, floor, rollOverCircle } = addObjects(scene);
 
-const rollOverCircle = createRollOverCircle();
-scene.add(rollOverCircle);
-
-
-const ambientLight = createAmbientLight();
-scene.add(ambientLight);
-
-const directionalLight = createDirectionalLight();
-scene.add(directionalLight);
-
+// Events
 window.addEventListener("resize", () => {
-  // Update sizes
-  sizes.width = window.innerWidth;
-  sizes.height = window.innerHeight;
-
-  // Update camera
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
-
-  // Update renderer
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  handleResize({ sizes, camera, renderer });
 });
 
-/**
- * Mouse
- */
-const mouse = new THREE.Vector2();
-
 window.addEventListener("mousemove", (_event) => {
-  mouse.x = (_event.clientX / sizes.width) * 2 - 1;
-  mouse.y = -(_event.clientY / sizes.height) * 2 + 1;
+  handelMouseMove({ sizes, mouse, _event });
 });
 
 window.addEventListener("click", (event) => {
   event.stopPropagation();
-
-  if (currentIntersect) {
-    console.log("click", currentIntersect.object);
-
-    cameraControls.fitToBox(currentIntersect.object, true);
-  } else if (currentFloorIntersect) {
-    console.log("click on Floor", currentFloorIntersect);
-
-    cameraControls.moveTo(
-      currentFloorIntersect.point.x,
-      currentFloorIntersect.point.y,
-      currentFloorIntersect.point.z,
-      true
-    );
-  }
+  if (currentIntersect) handleClickOnSphere(currentIntersect, cameraControls);
+  else if (currentFloorIntersect) handleClickOnFloor(currentFloorIntersect, cameraControls);
 });
 
-(function anim() {
+animate(() => {
+  // const elapsed = clock.getElapsedTime();
   const delta = clock.getDelta();
-  const elapsed = clock.getElapsedTime();
-  cameraControls.update(delta);
 
+  cameraControls.update(delta);
   raycaster.setFromCamera(mouse, camera);
 
-  const objectsToTest = [object1, object2, object3];
-  const intersects = raycaster.intersectObjects(objectsToTest);
+  // Floor
+  const intersectedFloor = raycaster.intersectObject(floor);
 
-  /*   const intersectGround = raycaster.intersectObject(floor);
-
-  if (intersectGround.length) {
-    const intersect = intersectGround[0];
+  if (intersectedFloor.length) {
+    const intersect = intersectedFloor[0];
     currentFloorIntersect = intersect;
 
-    const point = new THREE.Vector3(intersect.point.x, intersect.point.y + 0.1, intersect.point.z);
-    rollOverMesh.position.copy(point).add(intersect.face.normal);
+    const floorIntersectPoint = new THREE.Vector3(intersect.point.x, intersect.point.y + 0.1, intersect.point.z);
+    rollOverCircle.position.copy(floorIntersectPoint).add(intersect.face.normal);
   } else {
     currentFloorIntersect = null;
   }
- */
+
+  // Sphere
+  const objectsToTest = [object1, object2, object3];
+  const intersects = raycaster.intersectObjects(objectsToTest);
+
   for (const object of objectsToTest) {
     object.material.color.set("#ff0000");
   }
@@ -133,5 +102,19 @@ window.addEventListener("click", (event) => {
   }
 
   renderer.render(scene, camera);
-  requestAnimationFrame(anim);
-})();
+});
+
+function addObjects(scene) {
+  const floor = createFloor();
+  scene.add(floor);
+
+  const object1 = createSphere({ color: "#ff0000", x: -2, y: 1, z: 0 });
+  const object2 = createSphere({ color: "#ff0000", x: 0, y: 1, z: 0 });
+  const object3 = createSphere({ color: "#ff0000", x: 2, y: 1, z: 0 });
+  scene.add(object1, object2, object3);
+
+  const rollOverCircle = createRollOverCircle();
+  scene.add(rollOverCircle);
+
+  return { object1, object2, object3, floor, rollOverCircle };
+}
