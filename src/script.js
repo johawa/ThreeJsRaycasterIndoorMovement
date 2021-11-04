@@ -25,6 +25,11 @@ document.body.appendChild(renderer.domElement);
 
 const cameraControls = new CameraControls(camera, renderer.domElement);
 
+cameraControls.minZoom = 1;
+cameraControls.maxZoom = 1;
+cameraControls.minDistance = 10;
+cameraControls.maxDistance = 10;
+
 /**
  * Objects
  */
@@ -121,12 +126,7 @@ window.addEventListener("click", (event) => {
   if (currentIntersect) {
     console.log("click", currentIntersect.object);
 
-    cameraControls.moveTo(
-      currentIntersect.object.position.x,
-      currentIntersect.object.position.y,
-      currentIntersect.object.position.z,
-      true
-    );
+    cameraControls.fitToBox(currentIntersect.object, true);
   } else if (currentFloorIntersect) {
     console.log("click on Floor", currentFloorIntersect);
 
