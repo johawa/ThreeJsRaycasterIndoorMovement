@@ -40,22 +40,9 @@ const cameraControls = new CameraControls(camera, renderer.domElement);
 scene.add(createAmbientLight());
 scene.add(createDirectionalLight());
 
-const sphere1 = createMaterialSphere({ color: 0xff0000 });
-const sphere2 = createMaterialSphere({ color: 0x00ff00 });
-const sphere3 = createMaterialSphere({ color: 0x0000ff });
-
-camera.add(sphere1);
-camera.add(sphere2);
-camera.add(sphere3);
-
-sphere1.position.set(0, -0.3, -1);
-sphere1.scale.set(0.2, 0.2, 0.2);
-
-sphere2.position.set(-0.3, -0.3, -1);
-sphere2.scale.set(0.2, 0.2, 0.2);
-
-sphere3.position.set(0.3, -0.3, -1);
-sphere3.scale.set(0.2, 0.2, 0.2);
+const sphere1 = createMaterialSphere({ color: 0xff0000, index: -1 });
+const sphere2 = createMaterialSphere({ color: 0x00ff00, index: 0 });
+const sphere3 = createMaterialSphere({ color: 0x0000ff, index: 1 });
 
 // Objects
 const { object1, object2, object3, floor, rollOverCircle } = addObjects(scene);
@@ -71,8 +58,17 @@ window.addEventListener("mousemove", (_event) => {
 
 window.addEventListener("click", (event) => {
   event.stopPropagation();
-  if (currentSphereIntersect) handleClickOnSphere(currentSphereIntersect, cameraControls);
-  else if (currentFloorIntersect) handleClickOnFloor(currentFloorIntersect, cameraControls);
+  if (currentSphereIntersect) {
+    handleClickOnSphere(currentSphereIntersect, cameraControls);
+    camera.add(sphere1);
+    camera.add(sphere2);
+    camera.add(sphere3);
+  } else if (currentFloorIntersect) {
+    handleClickOnFloor(currentFloorIntersect, cameraControls);
+    camera.remove(sphere1);
+    camera.remove(sphere2);
+    camera.remove(sphere3);
+  }
 });
 
 console.log(object1);
