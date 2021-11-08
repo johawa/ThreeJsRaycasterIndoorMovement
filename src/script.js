@@ -78,7 +78,6 @@ window.addEventListener("click", (event) => {
 console.log(object1);
 
 animate(() => {
-  const elapsed = clock.getElapsedTime();
   const delta = clock.getDelta();
 
   cameraControls.update(delta);
@@ -110,15 +109,8 @@ animate(() => {
   }
 
   if (intersects.length) {
-    if (currentSphereIntersect === null) {
-      /* console.log("mouse enter", intersects[0].object); */
-    }
-
     currentSphereIntersect = intersects[0];
   } else {
-    if (currentSphereIntersect) {
-      /*  console.log("mouse leave", currentSphereIntersect.object); */
-    }
     currentSphereIntersect = null;
   }
 
@@ -130,7 +122,7 @@ animate(() => {
   }
 
   for (const intersect of intersectedMaterialShpere) {
-    intersect.object.rotation.y = Math.PI * elapsed * 0.4;
+    intersect.object.rotation.y = Math.PI * clock.getElapsedTime() * 0.4;
     object1.material.color.set("#ffffff");
     object2.material.color.set("#ffffff");
     object3.material.color.set("#ffffff");
