@@ -1,5 +1,6 @@
 import "./style.css";
 import * as THREE from "three";
+import * as TWEEN from "@tweenjs/tween.js";
 import CameraControls from "camera-controls";
 
 import createSphere from "./Objects/createSphere";
@@ -15,6 +16,8 @@ import animate from "./Scene/animate";
 import { handleClickOnSphere, handleClickOnFloor } from "./Events/handleClickHandlers";
 import { handleResize, handelMouseMove } from "./Events/eventHandlers";
 import createMaterialSphere from "./Objects/createMaterialShpere";
+
+import { tweenAnimation1 } from "./Animations/tweenAnimations";
 
 CameraControls.install({ THREE: THREE });
 
@@ -40,9 +43,14 @@ const cameraControls = new CameraControls(camera, renderer.domElement);
 scene.add(createAmbientLight());
 scene.add(createDirectionalLight());
 
+// Material Spheres
 const sphere1 = createMaterialSphere({ color: 0xff0000, index: -1 });
 const sphere2 = createMaterialSphere({ color: 0x00ff00, index: 0 });
 const sphere3 = createMaterialSphere({ color: 0x0000ff, index: 1 });
+
+camera.add(sphere1);
+camera.add(sphere2);
+camera.add(sphere3);
 
 // Objects
 const { object1, object2, object3, floor, rollOverCircle } = addObjects(scene);
@@ -60,14 +68,9 @@ window.addEventListener("click", (event) => {
   event.stopPropagation();
   if (currentSphereIntersect) {
     handleClickOnSphere(currentSphereIntersect, cameraControls);
-    camera.add(sphere1);
-    camera.add(sphere2);
-    camera.add(sphere3);
+    tweenAnimation1(sphere1, sphere2, sphere3);
   } else if (currentFloorIntersect) {
     handleClickOnFloor(currentFloorIntersect, cameraControls);
-    camera.remove(sphere1);
-    camera.remove(sphere2);
-    camera.remove(sphere3);
   }
 });
 
@@ -77,6 +80,8 @@ animate(() => {
   const delta = clock.getDelta();
 
   cameraControls.update(delta);
+  TWEEN.update();
+
   raycaster.setFromCamera(mouse, camera);
 
   // Floor
