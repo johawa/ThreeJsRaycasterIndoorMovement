@@ -15,7 +15,7 @@ import createAmbientLight from "./Scene/createAmbientLight";
 import createDirectionalLight from "./Scene/createDirectionalLight";
 import animate from "./Scene/animate";
 
-import { handleClickOnSphere, handleClickOnFloor } from "./Events/handleClickHandlers";
+import { handleClickOnShoe, handleClickOnFloor } from "./Events/handleClickHandlers";
 import { handleResize, handelMouseMove } from "./Events/eventHandlers";
 import createMaterialSphere from "./Objects/createMaterialShpere";
 
@@ -24,6 +24,8 @@ import { tweenAnimation1, resetTweenAnimation1 } from "./Animations/tweenAnimati
 CameraControls.install({ THREE: THREE });
 
 // Variables
+const state = { variant: "midnight" };
+let variants;
 let currentShoeIntersect = null;
 let currentFloorIntersect = null;
 const sizes = {
@@ -46,9 +48,9 @@ scene.add(createAmbientLight());
 scene.add(createDirectionalLight());
 
 // Material Spheres
-const materialSphere1 = createMaterialSphere({ color: 0xff0000, index: -1 });
-const materialSphere2 = createMaterialSphere({ color: 0x00ff00, index: 0 });
-const materialSphere3 = createMaterialSphere({ color: 0x0000ff, index: 1 });
+const materialSphere1 = createMaterialSphere({ index: -1 });
+const materialSphere2 = createMaterialSphere({ index: 0 });
+const materialSphere3 = createMaterialSphere({ index: 1 });
 
 // Chair
 const dracoLoader = new DRACOLoader();
@@ -60,10 +62,12 @@ gltfLoader.setDRACOLoader(dracoLoader);
 
 gltfLoader.load("MaterialsVariantsShoe.gltf", function (gltf) {
   gltf.scene.scale.set(10.0, 10.0, 10.0);
-
   scene.add(gltf.scene);
 
-  console.log("MaterialsVariantsShoe", gltf.scene);
+  const variantsExtension = gltf.userData.gltfExtensions["KHR_materials_variants"];
+  variants = variantsExtension.variants.map((variant) => variant.name);
+
+  console.log("variants", variants);
 });
 
 // Objects
@@ -81,7 +85,7 @@ window.addEventListener("mousemove", (_event) => {
 window.addEventListener("click", (event) => {
   event.stopPropagation();
   if (currentShoeIntersect) {
-    handleClickOnSphere(currentShoeIntersect, cameraControls);
+    handleClickOnShoe(currentShoeIntersect, cameraControls);
     camera.add(materialSphere1);
     camera.add(materialSphere2);
     camera.add(materialSphere3);
@@ -147,13 +151,8 @@ function addObjects(scene) {
   const floor = createFloor();
   scene.add(floor);
 
-  /*   const object1 = createSphere({ color: "#ff0000", x: -2, y: 1, z: 0 });
-  const object2 = createSphere({ color: "#ff0000", x: 0, y: 1, z: 0 });
-  const object3 = createSphere({ color: "#ff0000", x: 2, y: 1, z: 0 });
-  scene.add(object1, object2, object3);
- */
   const rollOverCircle = createRollOverCircle();
   scene.add(rollOverCircle);
 
-  return { /* object1, object2, object3, */ floor, rollOverCircle };
+  return { floor, rollOverCircle };
 }

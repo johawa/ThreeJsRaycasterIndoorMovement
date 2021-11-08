@@ -1,4 +1,4 @@
-export function handleClickOnSphere(currentIntersect, cameraControls) {
+export function handleClickOnShoe(currentIntersect, cameraControls) {
   cameraControls.fitToBox(currentIntersect.object, true);
 }
 
