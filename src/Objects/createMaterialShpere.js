@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import { TextureLoader } from "three";
 
-const beach = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseBeach.jpg");
 const midnight = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseMidnight.jpg");
+const beach = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseBeach.jpg");
 const street = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseStreet.jpg");
 
 export default function createMaterialSphere({ index }) {

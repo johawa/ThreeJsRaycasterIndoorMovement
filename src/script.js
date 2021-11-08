@@ -25,7 +25,11 @@ CameraControls.install({ THREE: THREE });
 
 // Variables
 const state = { variant: "midnight" };
+let parser;
+let variantsExtension;
+let materialShperesVisible = false;
 let variants;
+let currentMaterialSphereIntersect = null;
 let currentShoeIntersect = null;
 let currentFloorIntersect = null;
 const sizes = {
@@ -51,6 +55,9 @@ scene.add(createDirectionalLight());
 const materialSphere1 = createMaterialSphere({ index: -1 });
 const materialSphere2 = createMaterialSphere({ index: 0 });
 const materialSphere3 = createMaterialSphere({ index: 1 });
+materialSphere1.name = "midnight";
+materialSphere2.name = "beach";
+materialSphere3.name = "street";
 
 // Chair
 const dracoLoader = new DRACOLoader();
@@ -63,11 +70,9 @@ gltfLoader.setDRACOLoader(dracoLoader);
 gltfLoader.load("MaterialsVariantsShoe.gltf", function (gltf) {
   gltf.scene.scale.set(10.0, 10.0, 10.0);
   scene.add(gltf.scene);
-
-  const variantsExtension = gltf.userData.gltfExtensions["KHR_materials_variants"];
+  parser = gltf.parser;
+  variantsExtension = gltf.userData.gltfExtensions["KHR_materials_variants"];
   variants = variantsExtension.variants.map((variant) => variant.name);
-
-  console.log("variants", variants);
 });
 
 // Objects
@@ -84,18 +89,25 @@ window.addEventListener("mousemove", (_event) => {
 
 window.addEventListener("click", (event) => {
   event.stopPropagation();
+
   if (currentShoeIntersect) {
     handleClickOnShoe(currentShoeIntersect, cameraControls);
+    materialShperesVisible = true;
     camera.add(materialSphere1);
     camera.add(materialSphere2);
     camera.add(materialSphere3);
     tweenAnimation1(materialSphere1, materialSphere2, materialSphere3);
   } else if (currentFloorIntersect) {
     handleClickOnFloor(currentFloorIntersect, cameraControls);
+    materialShperesVisible = false;
     camera.remove(materialSphere1);
     camera.remove(materialSphere2);
     camera.remove(materialSphere3);
     resetTweenAnimation1(materialSphere1, materialSphere2, materialSphere3);
+  }
+  if (currentMaterialSphereIntersect) {
+    selectVariant(scene, parser, variantsExtension, currentMaterialSphereIntersect);
+    console.log("click on MaterialSphere", currentMaterialSphereIntersect);
   }
 });
 
@@ -134,18 +146,48 @@ animate(() => {
   }
 
   // Material Spheres
-  const materialSpheresToTest = [materialSphere1, materialSphere2, materialSphere3];
-  const intersectedMaterialShpere = raycaster.intersectObjects([materialSphere1, materialSphere2, materialSphere3]);
+  if (materialShperesVisible) {
+    const materialSpheresToTest = [materialSphere1, materialSphere2, materialSphere3];
+    const intersectedMaterialShpere = raycaster.intersectObjects(materialSpheresToTest);
 
-  for (const object of materialSpheresToTest) {
-  }
+    for (const intersect of intersectedMaterialShpere) {
+      intersect.object.rotation.y = Math.PI * clock.getElapsedTime() * 0.4;
+    }
 
-  for (const intersect of intersectedMaterialShpere) {
-    intersect.object.rotation.y = Math.PI * clock.getElapsedTime() * 0.4;
+    if (intersectedMaterialShpere.length) {
+      currentMaterialSphereIntersect = intersectedMaterialShpere[0].object.name;
+    } else {
+      currentMaterialSphereIntersect = null;
+    }
   }
 
   renderer.render(scene, camera);
 });
+
+function selectVariant(scene, parser, extension, variantName) {
+  const variantIndex = extension.variants.findIndex((v) => v.name.includes(variantName));
+
+  scene.traverse(async (object) => {
+    if (!object.isMesh || !object.userData.gltfExtensions) return;
+
+    const meshVariantDef = object.userData.gltfExtensions["KHR_materials_variants"];
+
+    if (!meshVariantDef) return;
+
+    if (!object.userData.originalMaterial) {
+      object.userData.originalMaterial = object.material;
+    }
+
+    const mapping = meshVariantDef.mappings.find((mapping) => mapping.variants.includes(variantIndex));
+
+    if (mapping) {
+      object.material = await parser.getDependency("material", mapping.material);
+      parser.assignFinalMaterial(object);
+    } else {
+      object.material = object.userData.originalMaterial;
+    }
+  });
+}
 
 function addObjects(scene) {
   const floor = createFloor();

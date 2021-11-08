@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 export default function createDirectionalLight() {
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
 
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.set(1024, 1024);
