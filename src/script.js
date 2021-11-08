@@ -5,7 +5,6 @@ import CameraControls from "camera-controls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
-import createSphere from "./Objects/createSphere";
 import createFloor from "./Objects/createFloor";
 import createRollOverCircle from "./Objects//createRollOverCircle";
 
@@ -20,8 +19,16 @@ import { handleResize, handelMouseMove } from "./Events/eventHandlers";
 import createMaterialSphere from "./Objects/createMaterialShpere";
 
 import { tweenAnimation1, resetTweenAnimation1 } from "./Animations/tweenAnimations";
+import { selectShoeVariant } from "./Animations/selectShoeVariant";
 
 CameraControls.install({ THREE: THREE });
+// Loaders
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath("draco/");
+dracoLoader.setDecoderConfig({ type: "js" });
+
+const gltfLoader = new GLTFLoader().setPath("/MaterialsVariantsShoe/glTF/");
+gltfLoader.setDRACOLoader(dracoLoader);
 
 // Variables
 const state = { variant: "midnight" };
@@ -59,24 +66,17 @@ materialSphere1.name = "midnight";
 materialSphere2.name = "beach";
 materialSphere3.name = "street";
 
-// Chair
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath("draco/");
-dracoLoader.setDecoderConfig({ type: "js" });
+// Objects
+const { floor, rollOverCircle } = addObjects(scene);
 
-const gltfLoader = new GLTFLoader().setPath("/MaterialsVariantsShoe/glTF/");
-gltfLoader.setDRACOLoader(dracoLoader);
-
+// Shoe
 gltfLoader.load("MaterialsVariantsShoe.gltf", function (gltf) {
   gltf.scene.scale.set(10.0, 10.0, 10.0);
-  scene.add(gltf.scene);
   parser = gltf.parser;
   variantsExtension = gltf.userData.gltfExtensions["KHR_materials_variants"];
   variants = variantsExtension.variants.map((variant) => variant.name);
+  scene.add(gltf.scene);
 });
-
-// Objects
-const { floor, rollOverCircle } = addObjects(scene);
 
 // Events
 window.addEventListener("resize", () => {
@@ -106,8 +106,7 @@ window.addEventListener("click", (event) => {
     resetTweenAnimation1(materialSphere1, materialSphere2, materialSphere3);
   }
   if (currentMaterialSphereIntersect) {
-    selectVariant(scene, parser, variantsExtension, currentMaterialSphereIntersect);
-    console.log("click on MaterialSphere", currentMaterialSphereIntersect);
+    selectShoeVariant(scene, parser, variantsExtension, currentMaterialSphereIntersect);
   }
 });
 
@@ -163,31 +162,6 @@ animate(() => {
 
   renderer.render(scene, camera);
 });
-
-function selectVariant(scene, parser, extension, variantName) {
-  const variantIndex = extension.variants.findIndex((v) => v.name.includes(variantName));
-
-  scene.traverse(async (object) => {
-    if (!object.isMesh || !object.userData.gltfExtensions) return;
-
-    const meshVariantDef = object.userData.gltfExtensions["KHR_materials_variants"];
-
-    if (!meshVariantDef) return;
-
-    if (!object.userData.originalMaterial) {
-      object.userData.originalMaterial = object.material;
-    }
-
-    const mapping = meshVariantDef.mappings.find((mapping) => mapping.variants.includes(variantIndex));
-
-    if (mapping) {
-      object.material = await parser.getDependency("material", mapping.material);
-      parser.assignFinalMaterial(object);
-    } else {
-      object.material = object.userData.originalMaterial;
-    }
-  });
-}
 
 function addObjects(scene) {
   const floor = createFloor();

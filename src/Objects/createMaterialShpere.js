@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { TextureLoader } from "three";
 
-const midnight = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseMidnight.jpg");
-const beach = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseBeach.jpg");
-const street = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseStreet.jpg");
+const midnight = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseMidnightmini.jpg");
+const beach = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseBeachmini.jpg");
+const street = new THREE.TextureLoader().load("/MaterialsVariantsShoe/glTF/diffuseStreetmini.jpg");
 
 export default function createMaterialSphere({ index }) {
   const geomerty = new THREE.SphereGeometry(0.5, 16, 16);
