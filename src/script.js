@@ -2,6 +2,8 @@ import "./style.css";
 import * as THREE from "three";
 import * as TWEEN from "@tweenjs/tween.js";
 import CameraControls from "camera-controls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
 
 import createSphere from "./Objects/createSphere";
 import createFloor from "./Objects/createFloor";
@@ -17,12 +19,12 @@ import { handleClickOnSphere, handleClickOnFloor } from "./Events/handleClickHan
 import { handleResize, handelMouseMove } from "./Events/eventHandlers";
 import createMaterialSphere from "./Objects/createMaterialShpere";
 
-import { tweenAnimation1 } from "./Animations/tweenAnimations";
+import { tweenAnimation1, resetTweenAnimation1 } from "./Animations/tweenAnimations";
 
 CameraControls.install({ THREE: THREE });
 
 // Variables
-let currentSphereIntersect = null;
+let currentShoeIntersect = null;
 let currentFloorIntersect = null;
 const sizes = {
   width: window.innerWidth,
@@ -44,16 +46,28 @@ scene.add(createAmbientLight());
 scene.add(createDirectionalLight());
 
 // Material Spheres
-const sphere1 = createMaterialSphere({ color: 0xff0000, index: -1 });
-const sphere2 = createMaterialSphere({ color: 0x00ff00, index: 0 });
-const sphere3 = createMaterialSphere({ color: 0x0000ff, index: 1 });
+const materialSphere1 = createMaterialSphere({ color: 0xff0000, index: -1 });
+const materialSphere2 = createMaterialSphere({ color: 0x00ff00, index: 0 });
+const materialSphere3 = createMaterialSphere({ color: 0x0000ff, index: 1 });
 
-camera.add(sphere1);
-camera.add(sphere2);
-camera.add(sphere3);
+// Chair
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath("draco/");
+dracoLoader.setDecoderConfig({ type: "js" });
+
+const gltfLoader = new GLTFLoader().setPath("/MaterialsVariantsShoe/glTF/");
+gltfLoader.setDRACOLoader(dracoLoader);
+
+gltfLoader.load("MaterialsVariantsShoe.gltf", function (gltf) {
+  gltf.scene.scale.set(10.0, 10.0, 10.0);
+
+  scene.add(gltf.scene);
+
+  console.log("MaterialsVariantsShoe", gltf.scene);
+});
 
 // Objects
-const { object1, object2, object3, floor, rollOverCircle } = addObjects(scene);
+const { floor, rollOverCircle } = addObjects(scene);
 
 // Events
 window.addEventListener("resize", () => {
@@ -66,15 +80,20 @@ window.addEventListener("mousemove", (_event) => {
 
 window.addEventListener("click", (event) => {
   event.stopPropagation();
-  if (currentSphereIntersect) {
-    handleClickOnSphere(currentSphereIntersect, cameraControls);
-    tweenAnimation1(sphere1, sphere2, sphere3);
+  if (currentShoeIntersect) {
+    handleClickOnSphere(currentShoeIntersect, cameraControls);
+    camera.add(materialSphere1);
+    camera.add(materialSphere2);
+    camera.add(materialSphere3);
+    tweenAnimation1(materialSphere1, materialSphere2, materialSphere3);
   } else if (currentFloorIntersect) {
     handleClickOnFloor(currentFloorIntersect, cameraControls);
+    camera.remove(materialSphere1);
+    camera.remove(materialSphere2);
+    camera.remove(materialSphere3);
+    resetTweenAnimation1(materialSphere1, materialSphere2, materialSphere3);
   }
 });
-
-console.log(object1);
 
 animate(() => {
   const delta = clock.getDelta();
@@ -97,36 +116,28 @@ animate(() => {
     currentFloorIntersect = null;
   }
 
-  // Sphere
-  const spheresToTest = [object1, object2, object3];
-  const intersects = raycaster.intersectObjects(spheresToTest);
+  // Shoe
+  const shoeObject = scene.getObjectByName("Shoeobj");
 
-  for (const object of spheresToTest) {
-    object.material.color.set("#ff0000");
-  }
+  if (shoeObject) {
+    const intersectShoe = raycaster.intersectObject(shoeObject, true);
 
-  for (const intersect of intersects) {
-    intersect.object.material.color.set("#0000ff");
-  }
-
-  if (intersects.length) {
-    currentSphereIntersect = intersects[0];
-  } else {
-    currentSphereIntersect = null;
+    if (intersectShoe.length) {
+      currentShoeIntersect = intersectShoe[0];
+    } else {
+      currentShoeIntersect = null;
+    }
   }
 
   // Material Spheres
-  const materialSpheresToTest = [sphere1, sphere2, sphere3];
-  const intersectedMaterialShpere = raycaster.intersectObjects([sphere1, sphere2, sphere3]);
+  const materialSpheresToTest = [materialSphere1, materialSphere2, materialSphere3];
+  const intersectedMaterialShpere = raycaster.intersectObjects([materialSphere1, materialSphere2, materialSphere3]);
 
   for (const object of materialSpheresToTest) {
   }
 
   for (const intersect of intersectedMaterialShpere) {
     intersect.object.rotation.y = Math.PI * clock.getElapsedTime() * 0.4;
-    object1.material.color.set("#ffffff");
-    object2.material.color.set("#ffffff");
-    object3.material.color.set("#ffffff");
   }
 
   renderer.render(scene, camera);
@@ -136,13 +147,13 @@ function addObjects(scene) {
   const floor = createFloor();
   scene.add(floor);
 
-  const object1 = createSphere({ color: "#ff0000", x: -2, y: 1, z: 0 });
+  /*   const object1 = createSphere({ color: "#ff0000", x: -2, y: 1, z: 0 });
   const object2 = createSphere({ color: "#ff0000", x: 0, y: 1, z: 0 });
   const object3 = createSphere({ color: "#ff0000", x: 2, y: 1, z: 0 });
   scene.add(object1, object2, object3);
-
+ */
   const rollOverCircle = createRollOverCircle();
   scene.add(rollOverCircle);
 
-  return { object1, object2, object3, floor, rollOverCircle };
+  return { /* object1, object2, object3, */ floor, rollOverCircle };
 }
