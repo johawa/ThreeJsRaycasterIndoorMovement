@@ -106,33 +106,26 @@ gltfLoader.load("room.glb", function (glb) {
   var model = glb.scene;
 
   model.position.y = -1;
-/* 
+
   const mirrorGlass = model.children.find((c) => c.name === "Mirror_Glass");
 
-  var box = new THREE.Box3().setFromObject(mirrorGlass);
-  console.log(box);
-
-  const geometry = new THREE.CircleGeometry(0.4, 64);
+  const geometry = new THREE.CircleGeometry(0.285, 64);
   const groundMirror = new Reflector(geometry, {
-    clipBias: 0.003,
-    textureWidth: 20,
-    textureHeight: 20,
+    textureWidth: window.innerWidth * window.devicePixelRatio,
+    textureHeight: window.innerHeight * window.devicePixelRatio,
     color: 0x777777,
   });
 
   groundMirror.rotateX(Math.PI / 2);
+  groundMirror.position.y = -0.01;
 
-  mirrorGlass.add(groundMirror); */
-
-  console.log(mirrorGlass);
+  mirrorGlass.add(groundMirror);
 
   /*   const glassMaterial = new Reflector(mirrorGlass.geometry, {
     clipBias: 0.003,
     color: 0x889999,
   });  */
 
-  /*   const glassMaterial =  new THREE.MeshStandardMaterial({ color: 0xff0000 });
-   */
   /*   mirrorGlass.traverse((o) => {
     if (o.isMesh) o.material = glassMaterial;
   }); */
