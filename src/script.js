@@ -33,6 +33,7 @@ gltfLoader.setDRACOLoader(dracoLoader);
 
 // Variables
 const state = { variant: "midnight" };
+let drag = false;
 let parser;
 let variantsExtension;
 let materialShperesVisible = false;
@@ -89,6 +90,7 @@ const { floor, rollOverCircle } = addObjects(scene);
 // Glass
 gltfLoader.load("room.glb", function (glb) {
   var model = glb.scene;
+  model.scale.set(2.0, 2.0, 2.0);
   model.position.y = -1;
   /*   var newMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
   model.traverse((o) => {
@@ -98,6 +100,9 @@ gltfLoader.load("room.glb", function (glb) {
 });
 
 // Events
+document.addEventListener("mousedown", () => (drag = false));
+document.addEventListener("mousemove", () => (drag = true));
+
 window.addEventListener("resize", () => {
   handleResize({ sizes, camera, renderer });
 });
@@ -106,8 +111,9 @@ window.addEventListener("mousemove", (_event) => {
   handelMouseMove({ sizes, mouse, _event });
 });
 
-window.addEventListener("click", (event) => {
+window.addEventListener("mouseup", (event) => {
   event.stopPropagation();
+  if (drag) return;
 
   if (currentShoeIntersect) {
     handleClickOnShoe(currentShoeIntersect, cameraControls);
@@ -117,7 +123,7 @@ window.addEventListener("click", (event) => {
     camera.add(materialSphere3);
     tweenAnimation1(materialSphere1, materialSphere2, materialSphere3);
   } else if (currentFloorIntersect) {
-/*     handleClickOnFloor(currentFloorIntersect, cameraControls); */
+    handleClickOnFloor(currentFloorIntersect, cameraControls);
     materialShperesVisible = false;
     camera.remove(materialSphere1);
     camera.remove(materialSphere2);
@@ -144,7 +150,7 @@ animate(() => {
     const intersect = intersectedFloor[0];
     currentFloorIntersect = intersect;
 
-    const floorIntersectPoint = new THREE.Vector3(intersect.point.x, intersect.point.y + 0.1, intersect.point.z);
+    const floorIntersectPoint = new THREE.Vector3(intersect.point.x, intersect.point.y + 0.001, intersect.point.z);
     rollOverCircle.position.copy(floorIntersectPoint).add(intersect.face.normal);
   } else {
     currentFloorIntersect = null;
