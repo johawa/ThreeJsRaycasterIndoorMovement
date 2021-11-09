@@ -4,6 +4,8 @@ import * as TWEEN from "@tweenjs/tween.js";
 import CameraControls from "camera-controls";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { Reflector } from "three/examples/jsm/objects/Reflector.js";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import createFloor from "./Objects/createFloor";
 import createRollOverCircle from "./Objects//createRollOverCircle";
@@ -21,7 +23,7 @@ import createMaterialSphere from "./Objects/createMaterialShpere";
 import { tweenAnimation1, resetTweenAnimation1 } from "./Animations/tweenAnimations";
 import { selectShoeVariant } from "./Animations/selectShoeVariant";
 
-CameraControls.install({ THREE: THREE });
+/* CameraControls.install({ THREE: THREE }); */
 
 // Loaders
 const dracoLoader = new DRACOLoader();
@@ -54,18 +56,30 @@ const raycaster = new THREE.Raycaster();
 const renderer = createRenderer({ width: sizes.width, height: sizes.height });
 const camera = createCamera({ width: sizes.width, height: sizes.height });
 scene.add(camera);
-const cameraControls = new CameraControls(camera, renderer.domElement);
 
-cameraControls.minDistance = cameraControls.maxDistance = 1;
+// Orbitcamera for dev
+const cameraControls = new OrbitControls(camera, renderer.domElement);
+cameraControls.target.set(0, 0, 0);
+cameraControls.maxDistance = 2;
+cameraControls.minDistance = 1;
+cameraControls.update();
+
+// First Person Camera
+/* const cameraControls = new CameraControls(camera, renderer.domElement); */
+/* cameraControls.minDistance = cameraControls.maxDistance = 1;
 cameraControls.azimuthRotateSpeed = -0.3; // negative value to invert rotation direction
 cameraControls.polarRotateSpeed = -0.3; // negative value to invert rotation direction
 cameraControls.truckSpeed = 10;
 cameraControls.mouseButtons.wheel = null;
 cameraControls.saveState();
+ */
 
 // Lights
 scene.add(createAmbientLight());
 scene.add(createDirectionalLight());
+
+// Skybox
+addSkybox(scene);
 
 // Material Spheres
 const materialSphere1 = createMaterialSphere({ index: -1 });
@@ -90,12 +104,39 @@ const { floor, rollOverCircle } = addObjects(scene);
 // Glass
 gltfLoader.load("room.glb", function (glb) {
   var model = glb.scene;
-  model.scale.set(2.0, 2.0, 2.0);
+
   model.position.y = -1;
-  /*   var newMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-  model.traverse((o) => {
-    if (o.isMesh) o.material = newMaterial;
+/* 
+  const mirrorGlass = model.children.find((c) => c.name === "Mirror_Glass");
+
+  var box = new THREE.Box3().setFromObject(mirrorGlass);
+  console.log(box);
+
+  const geometry = new THREE.CircleGeometry(0.4, 64);
+  const groundMirror = new Reflector(geometry, {
+    clipBias: 0.003,
+    textureWidth: 20,
+    textureHeight: 20,
+    color: 0x777777,
+  });
+
+  groundMirror.rotateX(Math.PI / 2);
+
+  mirrorGlass.add(groundMirror); */
+
+  console.log(mirrorGlass);
+
+  /*   const glassMaterial = new Reflector(mirrorGlass.geometry, {
+    clipBias: 0.003,
+    color: 0x889999,
+  });  */
+
+  /*   const glassMaterial =  new THREE.MeshStandardMaterial({ color: 0xff0000 });
+   */
+  /*   mirrorGlass.traverse((o) => {
+    if (o.isMesh) o.material = glassMaterial;
   }); */
+
   scene.add(model);
 });
 
@@ -187,6 +228,19 @@ animate(() => {
 
   renderer.render(scene, camera);
 });
+
+function addSkybox(scene) {
+  const loader = new THREE.CubeTextureLoader();
+  const texture = loader.load([
+    "SkyBox/posx.jpg",
+    "SkyBox/negx.jpg",
+    "SkyBox/posy.jpg",
+    "SkyBox/negy.jpg",
+    "SkyBox/posz.jpg",
+    "SkyBox/negz.jpg",
+  ]);
+  scene.background = texture;
+}
 
 function addObjects(scene) {
   const floor = createFloor();

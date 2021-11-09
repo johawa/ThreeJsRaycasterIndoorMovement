@@ -8,8 +8,7 @@ export default function createFloor() {
   floor.rotation.x = -Math.PI * 0.5;
   floor.position.y = -0.9;
 
-/*   floor.material.visible = false; */
-
+  floor.material.visible = false;
 
   return floor;
 }
