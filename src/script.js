@@ -22,12 +22,13 @@ import { tweenAnimation1, resetTweenAnimation1 } from "./Animations/tweenAnimati
 import { selectShoeVariant } from "./Animations/selectShoeVariant";
 
 CameraControls.install({ THREE: THREE });
+
 // Loaders
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath("draco/");
 dracoLoader.setDecoderConfig({ type: "js" });
 
-const gltfLoader = new GLTFLoader().setPath("/MaterialsVariantsShoe/glTF/");
+const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
 
 // Variables
@@ -54,6 +55,13 @@ const camera = createCamera({ width: sizes.width, height: sizes.height });
 scene.add(camera);
 const cameraControls = new CameraControls(camera, renderer.domElement);
 
+cameraControls.minDistance = cameraControls.maxDistance = 1;
+cameraControls.azimuthRotateSpeed = -0.3; // negative value to invert rotation direction
+cameraControls.polarRotateSpeed = -0.3; // negative value to invert rotation direction
+cameraControls.truckSpeed = 10;
+cameraControls.mouseButtons.wheel = null;
+cameraControls.saveState();
+
 // Lights
 scene.add(createAmbientLight());
 scene.add(createDirectionalLight());
@@ -70,12 +78,23 @@ materialSphere3.name = "street";
 const { floor, rollOverCircle } = addObjects(scene);
 
 // Shoe
-gltfLoader.load("MaterialsVariantsShoe.gltf", function (gltf) {
+/* gltfLoader.load("/MaterialsVariantsShoe/glTF/MaterialsVariantsShoe.gltf", function (gltf) {
   gltf.scene.scale.set(10.0, 10.0, 10.0);
   parser = gltf.parser;
   variantsExtension = gltf.userData.gltfExtensions["KHR_materials_variants"];
   variants = variantsExtension.variants.map((variant) => variant.name);
   scene.add(gltf.scene);
+});
+ */
+// Glass
+gltfLoader.load("room.glb", function (glb) {
+  var model = glb.scene;
+  model.position.y = -1;
+  /*   var newMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+  model.traverse((o) => {
+    if (o.isMesh) o.material = newMaterial;
+  }); */
+  scene.add(model);
 });
 
 // Events
@@ -98,7 +117,7 @@ window.addEventListener("click", (event) => {
     camera.add(materialSphere3);
     tweenAnimation1(materialSphere1, materialSphere2, materialSphere3);
   } else if (currentFloorIntersect) {
-    handleClickOnFloor(currentFloorIntersect, cameraControls);
+/*     handleClickOnFloor(currentFloorIntersect, cameraControls); */
     materialShperesVisible = false;
     camera.remove(materialSphere1);
     camera.remove(materialSphere2);
