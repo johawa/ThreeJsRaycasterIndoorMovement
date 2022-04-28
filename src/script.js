@@ -65,14 +65,13 @@ cameraControls.minDistance = 1;
 cameraControls.update();
 
 // First Person Camera
-/* const cameraControls = new CameraControls(camera, renderer.domElement); */
-/* cameraControls.minDistance = cameraControls.maxDistance = 1;
-cameraControls.azimuthRotateSpeed = -0.3; // negative value to invert rotation direction
-cameraControls.polarRotateSpeed = -0.3; // negative value to invert rotation direction
-cameraControls.truckSpeed = 10;
-cameraControls.mouseButtons.wheel = null;
-cameraControls.saveState();
- */
+// const cameraControls = new CameraControls(camera, renderer.domElement);
+// cameraControls.minDistance = cameraControls.maxDistance = 1;
+// cameraControls.azimuthRotateSpeed = -0.3; // negative value to invert rotation direction
+// cameraControls.polarRotateSpeed = -0.3; // negative value to invert rotation direction
+// cameraControls.truckSpeed = 10;
+// cameraControls.mouseButtons.wheel = null;
+// cameraControls.saveState();
 
 // Lights
 scene.add(createAmbientLight());
@@ -120,11 +119,6 @@ gltfLoader.load("room.glb", function (glb) {
   groundMirror.position.y = -0.01;
 
   mirrorGlass.add(groundMirror);
-
-  /*   const glassMaterial = new Reflector(mirrorGlass.geometry, {
-    clipBias: 0.003,
-    color: 0x889999,
-  });  */
 
   /*   mirrorGlass.traverse((o) => {
     if (o.isMesh) o.material = glassMaterial;
